@@ -15,10 +15,11 @@ public class Client {
 
             for (int i = start; i < itter; i++) {
                 var str = commands[i % commands.length];
+                System.out.println("Client sends: " + str);
                 out.println(str);
                 //Thread.sleep(100);
                 System.out.println(in.readLine());
-                Thread.sleep(100);
+                Thread.sleep(3000);
             }
 
         } catch (InterruptedException | IndexOutOfBoundsException e) {
