@@ -12,6 +12,7 @@ public class Client {
             var itter = 10000;
             if (commands[0].contains("QUIT"))
                 itter = 1;
+
             for (int i = start; i < itter; i++) {
                 var str = commands[i % commands.length];
                 out.println(str);

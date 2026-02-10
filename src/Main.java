@@ -20,8 +20,6 @@ public class Main {
             }));
 
             s.StartListening();
-
-//            Thread.sleep(5000);
             createClients();
 
             while (s.isRunning() && mainRunning.get()) {
