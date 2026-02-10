@@ -4,13 +4,14 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
-
+    static final List<Integer> PORTS = List.of(8081, 8082, 8083, 8084, 9090);
     static final String[] listOfCommands = new String[]{"TIME", "LOWER HELLO WORLD LOWER", "UPPER Hello world upper!", "BROADCAST Hello world!"};
     static final Random rand= new Random();
 
+
     void main() throws IOException {
         System.out.println("Server started.");
-        Server s = new Server(List.of(8081, 8082, 8083, 8084, 9090));
+        Server s = new Server(PORTS);
         try (s) {
 
             AtomicBoolean mainRunning = new AtomicBoolean(true);

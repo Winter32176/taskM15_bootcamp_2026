@@ -20,6 +20,7 @@ class ClientConn {
 }
 
 public class Server implements Closeable {
+    public static final int TIMEOUT = 30000;
     private volatile boolean running = true;
     private final List<Thread> threads = new ArrayList<>();
     private final List<ServerSocket> serverSockets = new ArrayList<>();
@@ -73,7 +74,7 @@ public class Server implements Closeable {
 
     private void handleClient(Socket socket) throws SocketException {
         ClientConn conn = null;
-        socket.setSoTimeout(30000);
+        socket.setSoTimeout(TIMEOUT);
         try (socket;
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
@@ -107,7 +108,7 @@ public class Server implements Closeable {
                             out.println("Time " + DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()));
                             break;
                         case "QUIT":
-                            System.out.println("Ended new socket: " + socket.getInetAddress().getHostAddress());
+                            System.out.println("Ended socket: " + socket.getInetAddress().getHostAddress());
                             out.println("Bye");
                             return;
                         default:
