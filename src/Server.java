@@ -73,7 +73,7 @@ public class Server implements Closeable {
 
     private void handleClient(Socket socket) throws SocketException {
         ClientConn conn = null;
-        socket.setSoTimeout(60000);
+        socket.setSoTimeout(30000);
         try (socket;
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
@@ -84,13 +84,10 @@ public class Server implements Closeable {
             System.out.println("Started new socket with: " + socket.getInetAddress());
 
             String m;
-            while ((m = in.readLine()) != null) {
+            while (((m = in.readLine()) != null)) {
                 var params = m.split(" ", 2);
-                if (params.length > 1 || params[0].contains("QUIT")) {
+                if (params.length > 1) {
                     switch (params[0]) {
-                        case "TIME":
-                            out.println("Time " + DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()));
-                            break;
                         case "UPPER":
                             out.println(params[1].toUpperCase());
                             break;
@@ -98,18 +95,25 @@ public class Server implements Closeable {
                             out.println(params[1].toLowerCase());
                             break;
                         case "BROADCAST":
-                            broadcast("BROADCAST FROM " + socket.getInetAddress() + " : " + params[1], socket.getLocalPort());
+                            broadcast("BROADCAST FROM " + socket.getInetAddress() + " : " + params[1], socket.getLocalPort(), socket.getPort());
                             break;
-                        case "QUIT":
-                            System.out.println("Ended new socket" + socket.getInetAddress().getHostAddress());
-                            out.println("Bye");
-                            return;
                         default:
                             out.println("ERROR: Unknown command: " + m);
                             break;
                     }
                 } else {
-                    out.println("ECHO: " + m);
+                    switch (params[0]) {
+                        case "TIME":
+                            out.println("Time " + DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()));
+                            break;
+                        case "QUIT":
+                            System.out.println("Ended new socket: " + socket.getInetAddress().getHostAddress());
+                            out.println("Bye");
+                            return;
+                        default:
+                            out.println("ECHO: " + m);
+                    }
+
                 }
             }
 
@@ -120,16 +124,19 @@ public class Server implements Closeable {
             System.out.println("Client timed out: " + socket.getRemoteSocketAddress());
         } catch (IOException e) {
             if (running) e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (conn != null) clients.remove(conn);
         }
     }
 
-    private void broadcast(String message, int port) {
+    private void broadcast(String message, int port, int clientport) {
         clients.stream()
                 .filter(c -> c.socket.getLocalPort() == port && !c.socket.isClosed())
                 .forEach(c -> {
+                    if (c.socket.getPort() == clientport) {
+                        return;
+                    }
+
                     c.out.println(message);
                     if (c.out.checkError()) {
                         clients.remove(c);
